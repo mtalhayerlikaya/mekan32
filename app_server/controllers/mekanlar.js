@@ -1,107 +1,131 @@
-var express = require('express');
-var router = express.Router();
+var request = require('postman-request');
 
-/* GET home page. */
-const anaSayfa = function(req, res, next) {
-    res.render('mekanlar-liste', {
-        'baslik': 'Mekan32 | Anasayfa',
-        'footer': 'Muhammed  Talha Yerlikaya 2020',
-        'sayfaBaslik': {
-            'siteAd': 'Mekan 32',
-            'aciklama': 'Isparta Civarındaki Mekanları Keşfedin!'
-        },
-        'mekanlar': [{
-                'ad': 'Starbucks',
-                'adres': 'Centrum Garden Avm',
-                'puan': 3,
-                'imkanlar': ['Dunya Kahveleri', 'Kekler', 'Pastalar'],
-                'mesafe': '1km'
-            },
-            {
-                'ad': 'HD Iskender',
-                'adres': '212 AVM',
-                'puan': 5,
-                'imkanlar': ['Mercimek Corbasi', 'Iskender', 'Et Doner'],
-                'mesafe': '1.3km'
-            },
-            {
-                'ad': 'Kahve Dunyası',
-                'adres': 'MarmaraPark Avm',
-                'puan': 5,
-                'imkanlar': ['Dunya Kahveleri', 'Kekler', 'Pastalar'],
-                'mesafe': '1.5km'
-            },
-            {
-                'ad': 'Kahve Evi',
-                'adres': 'Forum Istanbul Avm',
-                'puan': 2,
-                'imkanlar': ['Dünya Kahveleri', 'Filtre Kahveler', 'Yöresel Kahveler'],
-                'mesafe': '1.9km'
-            },
-            {
-                'ad': 'Ramiz Kofte',
-                'adres': 'Torium Avm',
-                'puan': 4,
-                'imkanlar': ['Kasap Kofte', 'Kasarlı Kofte', 'Sebzeli Kofte'],
-                'mesafe': '4.5km'
-            }
-        ]
-    });
+var apiSecenekleri = {
+  sunucu : "http://localhost:3000",
+  apiYolu: '/api/mekanlar'
 }
 
-const mekanBilgisi = function(req, res, next) {
-    res.render('mekan-detay', {
-        'baslik': 'Mekan Bilgisi',
-        'footer': 'Muhammed Talha Yerlikaya 2020',
-        'sayfaBaslik': 'Starbucks',
-        'mekanBilgisi': {
-            'ad': 'Starbucks',
-            'adres': 'Centrum Garden Avm',
-            'puan': 3,
-            'imkanlar': ['Dunya Kahveleri', 'Kekler', 'Pastalar'],
-            'koordinatlar': {
-                'enlem': '37.781885',
-                'boylam': '30.566034'
-            },
-            'saatler': [{
-                'gunler': 'Pazartesi-Cuma',
-                'acilis': '08:00',
-                'kapanis': '22:00',
-                'kapali': false
-            }, {
-                'gunler': 'Cumartesi',
-                'acilis': '09:00',
-                'kapanis': '21:00',
-                'kapali': false
-            }, {
-                'gunler': 'Pazar',
-                'kapali': true
-            }],
-            'yorumlar': [{
-                    'yorumYapan': 'Muhammed Talha Yerlikaya',
-                    'puan': 3,
-                    'tarih': '27.11.2020',
-                    'yorumMetni': 'Kahveler lezzetli.'
-                }
-            ]
+var istekSecenekleri
+
+var footer = "Muhammed Talha Yerlikaya 2020"
+
+var mesafeyiFormatla = function (mesafe) {
+  var yeniMesafe, birim;
+  if (mesafe > 1000) {
+    yeniMesafe = parseFloat(mesafe/1000).toFixed(1);
+    birim = ' km';
+  } else {
+    yeniMesafe = parseFloat(mesafe).toFixed(1);
+    birim = ' m';
+  }
+  return yeniMesafe + birim;
+}
+
+var anasayfaOlustur = function(req, res, cevap, mekanListesi) {
+  var mesaj;
+
+  if (!(mekanListesi instanceof Array)) {
+    mesaj = "API HATASI: Bir şeyler ters gitti";
+    mekanListesi = [];
+  } else {
+    if(!mekanListesi.length) {
+      mesaj = "Civarda mekan bulunamadı!";
+    }
+  }
+  res.render('mekanlar-liste',{
+    baslik: "Mekan32",
+    sayfaBaslik: {
+      siteAd: 'Mekan32',
+      aciklama: 'Isparta Civarındaki Mekanları Keşfedin!'
+    },
+    mekanlar: mekanListesi,
+    mesaj: mesaj,
+    cevap: cevap
+  });
+}
+
+const anaSayfa=function(req ,res, next) {
+  istekSecenekleri =
+  {
+    url : apiSecenekleri.sunucu + apiSecenekleri.apiYolu,
+    method : "GET",
+    json : {},
+    qs : {
+      enlem : req.query.enlem,
+      boylam : req.query.boylam
+    }
+  };
+  request(
+    istekSecenekleri,
+    function(hata, cevap, mekanlar) {
+      var i, gelenMekanlar;
+      gelenMekanlar = mekanlar;
+
+      if (!hata && gelenMekanlar.length) {
+        for (i = 0; i < gelenMekanlar.length; i++) {
+          gelenMekanlar[i].mesafe = mesafeyiFormatla(gelenMekanlar[i].mesafe);
         }
-    });
+      }
+      anasayfaOlustur(req, res, cevap, gelenMekanlar);
+    }
+  );
 }
 
-const yorumEkle = function(req, res, next) {
-    res.render('yorum-ekle', {
-        title: 'Yorum Ekle',
-        'footer': 'Muhammed Talha Yerlikaya 2020',
-    });
+var detaySayfasiOlustur = function(req, res, mekanDetaylari){
+  res.render('mekan-detay',
+  {
+    baslik: mekanDetaylari.ad,
+    sayfaBaslik: mekanDetaylari.ad,
+    mekanBilgisi: mekanDetaylari
+  });
 }
 
-
-module.exports = {
-    anaSayfa,
-    mekanBilgisi,
-    yorumEkle
-}
-
-module.exports.admin = function(req, res, next) {
-    res.render('admin', { title: 'Admin' });
+var hataGoster = function(req, res, durum){
+  var baslik, icerik;
+  if (durum==404) {
+    baslik = "404, Sayfa Bulunamadı!";
+    icerik = "Kusura bakmayın, sayfayı bulamadık!";
+  } else {
+    baslik = durum + ", Bir şeyler ters gitti!";
+    icerik = "Ters giden bir şey var!";
+  }
+  res.status(durum);
+  res.render('hata',{
+    baslik:baslik,
+    icerik:icerik
+  });
 };
+
+const mekanBilgisi=function(req ,res, next) {
+  
+  istekSecenekleri = {
+    url : apiSecenekleri.sunucu + apiSecenekleri.apiYolu + req.params.mekanid,
+    method : "GET",
+    json : {}
+  };
+
+  request(
+    istekSecenekleri,
+    function(hata, cevap, mekanDetaylari) {
+      var gelenMekan = mekanDetaylari;
+      if (cevap.statusCode == 200) {
+        gelenMekan.koordinatlar = {
+          enlem : mekanDetaylari.koordinatlar[0],
+          boylam : mekanDetaylari.koordinatlar[1]
+        };
+        detaySayfasiOlustur(req, res, gelenMekan);
+      } else {
+        hataGoster(req, res, cevap.statusCode);
+      }
+    }
+  );
+}
+
+const yorumEkle=function(req ,res, next) {
+  res.render('yorum-ekle', {title: 'Yorum Ekle'});
+}
+module.exports={
+  anaSayfa,
+  mekanBilgisi,
+  yorumEkle
+}
