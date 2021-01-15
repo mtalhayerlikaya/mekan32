@@ -16,7 +16,7 @@ router
 
 router
 .route('/mekanlar/:mekanid/yorumlar')
-.post(ctrlYorumlar.yorumEkle);
+.post(ctrlYorumlar.yorumEkle)
 
 router
 .route('/mekanlar/:mekanid/yorumlar/:yorumid')
