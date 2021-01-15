@@ -6,15 +6,11 @@ var request = require('postman-request');
 
 var apiSecenekleri = {
     sunucu : "https://talhayerlikaya1821012038.herokuapp.com",
- //sunucu: "http://localhost:3000",
+ 
     apiYolu: '/api/mekanlar/'
 }
 
-/* Local Test: */
-/* var apiSecenekleri = {
-    sunucu: "http://localhost:3000/",
-    apiYolu: 'api/mekanlar/'
-} */
+
 
 
 
@@ -22,7 +18,7 @@ var istekSecenekleri;
 
 var footer = 'Muhammed Talha Yerlikaya';
 
-/* Mesafe Formatlama İşlemi Yapılır. */
+
 var mesafeyiFormatla = function(mesafe) {
   var yeniMesafe, birim;
   if (mesafe > 1000) {
@@ -35,7 +31,7 @@ var mesafeyiFormatla = function(mesafe) {
     return yeniMesafe + birim;
 }
 
-/* Anasayfayı oluşturan metot. */
+
 var anaSayfaOlustur = function(req, res, cevap, mekanListesi) {
     var mesaj;
     if (!(mekanListesi instanceof Array)) {
@@ -60,7 +56,7 @@ var anaSayfaOlustur = function(req, res, cevap, mekanListesi) {
 
 }
 
-/* Yeni Oluşturulan Metot Api İle Bağlantılı */
+
 const anaSayfa = function(req, res) {
     istekSecenekleri = {
         url: apiSecenekleri.sunucu + apiSecenekleri.apiYolu,
@@ -83,7 +79,7 @@ const anaSayfa = function(req, res) {
     });
 }
 
-/* Yeni Oluşturulan Metot Api İle Bağlantılı */
+
 var detaySayfasiOlustur = function(req, res, mekanDetaylari) {
     res.render('mekan-detay', {
         baslik: mekanDetaylari.ad,

@@ -82,9 +82,9 @@ const yorumEkle = function (req, res) {
 };
 
 const yorumGetir = function (req, res) {
-  //yorumid parametresi var mı kontrol et
+  
   if (req.params && req.params.mekanid && req.params.yorumid) {
-    //sadece mekan adını ve mekanın yorumunu getir
+    
     Mekan.findById(req.params.mekanid)
       .select('ad yorumlar')
       .exec(
@@ -96,14 +96,14 @@ const yorumGetir = function (req, res) {
           } else if (hata) {
             cevapOlustur(res, 400, hata);
             return;
-          }//mekana ait yorum var mı?
+          }
           if (mekan.yorumlar && mekan.yorumlar.length > 0) {
-            //verilen yorumid ye uygun yorum var mı?
+            
             yorum = mekan.yorumlar.id(req.params.yorumid);
-            //yoksa hata mesajı ver.
+            
             if (!yorum) {
               cevapOlustur(res, 404, { "mesaj": "yorumid bulunamadı" });
-            }//varsa cevap nesnesi döndür.içine mekan adı, idsi ve yorum ekle
+            }
             else {
               cevap = {
                 mekan: {
